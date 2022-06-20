@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <title>Sumário de Vendas</title>
+</head>
+
+<body>
+    <div id="app">
+
+        <div id="container" class="m-4">
+            <h1>{{ title }}</h1>
+
+            <table class="mt-5 table" v-if="salesByProduct">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(sale, index) in salesByProduct">
+                        <td>#{{ index + 1 }}</td>
+                        <td>{{ sale.name + 1 }}</td>
+                        <td v-money="'R$'">{{ sale.value }}</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td></td>
+                        <th>Total</th>
+                        <th v-money="'R$'">{{ calculateTotal(salesByProduct) }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        const data = [{
+            "id": 1,
+            "name": "Calculadora financeira 12c Gold HP",
+            "price": 269,
+            "qtde": 29,
+            "date": "01/05/2018 00:09"
+        }, {
+            "id": 2,
+            "name": "Lapiseira 0.7mm graphgear azul",
+            "price": 21.9,
+            "qtde": 17,
+            "date": "01/05/2018 01:04"
+        }, {
+            "id": 3,
+            "name": "Calculadora financeira 12c Gold HP",
+            "price": 269,
+            "qtde": 47,
+            "date": "01/05/2018 01:56"
+        }, {
+            "id": 4,
+            "name": "Lapiseira 0.7mm graphgear azul",
+            "price": 21.9,
+            "qtde": 14,
+            "date": "01/05/2018 02:55"
+        }, {
+            "id": 5,
+            "name": "Gaveteiro de chão c/3 gavetas",
+            "price": 39.9,
+            "qtde": 14,
+            "date": "01/05/2018 03:46"
+        }, {
+            "id": 6,
+            "name": "Papel sulfite 75g alcalino A4",
+            "price": 19.9,
+            "qtde": 49,
+            "date": "01/05/2018 03:54"
+        }, {
+            "id": 7,
+            "name": "Lapiseira 0.7mm graphgear azul",
+            "price": 21.9,
+            "qtde": 5,
+            "date": "01/05/2018 05:27"
+        }, {
+            "id": 8,
+            "name": "Calculadora financeira 12c Gold HP",
+            "price": 269,
+            "qtde": 47,
+            "date": "01/05/2018 06:29"
+        }, {
+            "id": 9,
+            "name": "Papel sulfite 75g alcalino A4",
+            "price": 19.9,
+            "qtde": 36,
+            "date": "01/05/2018 07:46"
+        }, {
+            "id": 10,
+            "name": "Gaveteiro de chão c/3 gavetas",
+            "price": 39.9,
+            "qtde": 37,
+            "date": "01/05/2018 08:28"
+        }, {
+            "id": 11,
+            "name": "Lapiseira 0.7mm graphgear azul",
+            "price": 21.9,
+            "qtde": 25,
+            "date": "01/05/2018 08:56"
+        }, {
+            "id": 12,
+            "name": "Calculadora financeira 12c Gold HP",
+            "price": 269,
+            "qtde": 13,
+            "date": "01/05/2018 09:32"
+        }, {
+            "id": 13,
+            "name": "Lapiseira 0.7mm graphgear azul",
+            "price": 21.9,
+            "qtde": 10,
+            "date": "01/05/2018 09:42"
+        }, {
+            "id": 14,
+            "name": "Papel sulfite 75g alcalino A4",
+            "price": 19.9,
+            "qtde": 17,
+            "date": "01/05/2018 10:02"
+        }, {
+            "id": 15,
+            "name": "Monitor LED 18.5 widescreen",
+            "price": 328.83,
+            "qtde": 21,
+            "date": "01/05/2018 10:49"
+        }]
+
+
+        Vue.directive('money', {
+            inserted(el, binding) {
+                const amount = parseFloat(el.innerHTML).toFixed(2)
+                    .replace('.', ',')
+                    .replace(/(\d)(?=(\d{3})+\,)/g, '$1.')
+                el.innerHTML = `${binding.value} ${amount}`
+            }
+        })
+
+        new Vue({
+            el: '#app',
+            data: {
+                title: 'Relatório de Vendas',
+                sales: null
+            },
+            methods: {
+                getSales() {
+                    this.sales = data
+                        /*
+                        fetch('/sales.json')
+                            .then(resp => resp.json())
+                            .then(data => this.sales = data)
+                        */
+                },
+                calculateTotal(sales) {
+                    if (!sales) return 0
+
+                    return sales.reduce((total, sale) => total + sale.value, 0)
+                }
+            },
+            computed: {
+                salesByProduct() {
+                    if (!this.sales) return null
+
+                    const salesByProduct = this.sales.reduce((grouped, sale) => {
+                        if (!grouped.hasOwnProperty(sale.name)) {
+                            grouped[sale.name] = {
+                                name: sale.name,
+                                value: sale.price * sale.qtde
+                            }
+                            return grouped
+                        }
+
+                        grouped[sale.name].value += sale.price * sale.qtde
+                        return grouped
+                    }, {})
+
+                    return Object.values(salesByProduct)
+                }
+            },
+            mounted() {
+                this.getSales()
+            }
+        })
+    </script>
+</body>
+
+</html>
